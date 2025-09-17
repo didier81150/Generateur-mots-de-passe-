@@ -436,33 +436,6 @@ identifiant2	classe2
                 </div>
             </div>
 
-            <div class="manual-section">
-                <h3>➕ Ajout manuel</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="identifiant">Identifiant</label>
-                        <input type="text" id="identifiant" placeholder="Ex: utilisateur1">
-                    </div>
-                    <div class="form-group">
-                        <label for="classe">Classe</label>
-                        <select id="classe">
-                            <option value="admin">Admin</option>
-                            <option value="utilisateur">Utilisateur</option>
-                            <option value="moderateur">Modérateur</option>
-                            <option value="invite">Invité</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="longueur">Longueur</label>
-                        <input type="number" id="longueur" value="12" min="6" max="32">
-                    </div>
-                    <div class="form-group">
-                        <button id="btn-ajouter-manuel" class="btn btn-primary">
-                            ➕ Ajouter
-                        </button>
-                    </div>
-                </div>
-            </div>
 
             <div class="settings">
                 <div class="form-group">
@@ -746,29 +719,6 @@ identifiant2	classe2
             document.getElementById('pasteArea').value = '';
         }
 
-        async function ajouterMotDePasse() {
-            const identifiant = document.getElementById('identifiant').value.trim();
-            const classe = document.getElementById('classe').value;
-            const longueur = parseInt(document.getElementById('longueur').value);
-
-            if (!identifiant) {
-                await customAlert('Identifiant manquant', 'Veuillez saisir un identifiant.');
-                return;
-            }
-
-            if (motsDePasse.some(mdp => mdp.identifiant === identifiant)) {
-                await customAlert('Erreur', 'Cet identifiant existe déjà.');
-                return;
-            }
-
-            const nouveauMdp = new MotDePasse(identifiant, classe, longueur);
-            motsDePasse.push(nouveauMdp);
-
-            document.getElementById('identifiant').value = '';
-            
-            afficherTableau();
-        }
-
         function afficherTableau() {
             const container = document.getElementById('tableauContainer');
             
@@ -1001,16 +951,9 @@ identifiant2	classe2
             // Attacher les écouteurs d'événements
             document.getElementById('btn-generer').addEventListener('click', traiterTableauColle);
             document.getElementById('btn-vider-paste').addEventListener('click', viderZoneCollage);
-            document.getElementById('btn-ajouter-manuel').addEventListener('click', ajouterMotDePasse);
             document.getElementById('btn-copier-tableau').addEventListener('click', copierTableau);
             document.getElementById('btn-telecharger-csv').addEventListener('click', telechargerCSV);
             document.getElementById('btn-vider-tableau').addEventListener('click', viderTableau);
-
-            document.getElementById('identifiant').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    ajouterMotDePasse();
-                }
-            });
             
             // Gestion des actions dans le tableau via délégation
             document.getElementById('tableauContainer').addEventListener('click', (e) => {
