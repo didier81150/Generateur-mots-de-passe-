@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Mots de Passe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 30px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group select {
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .paste-section, .manual-section {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .paste-section h3, .manual-section h3 {
+            color: #374151;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .paste-section p {
+            color: #6b7280;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        #pasteArea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        #pasteArea:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .paste-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .settings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .table-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .table-header h2 {
+            color: #374151;
+            font-size: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .password-cell {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #1f2937;
+            position: relative;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-provisoire {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-personnalise {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+        }
+
+        .copy-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .copy-notification.show {
+            transform: translateX(0);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .settings {
+                grid-template-columns: 1fr;
+            }
+            
+            .table-container {
+                padding: 15px;
+            }
+            
+            table {
+                font-size: 0.9rem;
+            }
+            
+            th, td {
+                padding: 12px 8px;
+            }
+        }
+
+        /* Styles for Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 90%;
+            max-width: 500px;
+            transform: scale(0.9);
+            transition: transform 0.2s ease;
+        }
+        
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #1f2937;
+            font-size: 1.25rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.75rem;
+            cursor: pointer;
+            color: #9ca3af;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: #374151;
+        }
+
+        .modal-body {
+            padding: 24px;
+            color: #374151;
+        }
+
+        .modal-body p {
+            margin: 0 0 15px 0;
+        }
+        .modal-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .modal-body input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+        .modal-body input[type="text"]:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .modal-footer {
+            padding: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Générateur de Mots de Passe</h1>
+            <p>Collez votre tableau (Identifiant | Classe) et générez automatiquement les mots de passe</p>
+        </div>
+
+        <div class="controls">
+            <div class="paste-section">
+                <h3>📋 Coller votre tableau</h3>
+                <p>Collez ici votre tableau avec les colonnes : Identifiant | Classe</p>
+                <textarea id="pasteArea" placeholder="Collez votre tableau ici (format: identifiant1	classe1
+identifiant2	classe2
+...)" rows="6"></textarea>
+                <div class="paste-controls">
+                    <button id="btn-generer" class="btn btn-primary">
+                        🔄 Générer les Mots de Passe
+                    </button>
+                    <button id="btn-vider-paste" class="btn btn-secondary">
+                        🗑️ Vider
+                    </button>
+                </div>
+            </div>
+
+            <div class="manual-section">
+                <h3>➕ Ajout manuel</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="identifiant">Identifiant</label>
+                        <input type="text" id="identifiant" placeholder="Ex: utilisateur1">
+                    </div>
+                    <div class="form-group">
+                        <label for="classe">Classe</label>
+                        <select id="classe">
+                            <option value="admin">Admin</option>
+                            <option value="utilisateur">Utilisateur</option>
+                            <option value="moderateur">Modérateur</option>
+                            <option value="invite">Invité</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="longueur">Longueur</label>
+                        <input type="number" id="longueur" value="12" min="6" max="32">
+                    </div>
+                    <div class="form-group">
+                        <button id="btn-ajouter-manuel" class="btn btn-primary">
+                            ➕ Ajouter
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="inclureMajuscules" checked> Majuscules (A-Z)
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="inclureMinuscules" checked> Minuscules (a-z)
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="inclureChiffres" checked> Chiffres (0-9)
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="inclureSymboles"> Symboles (!@#$...)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div class="table-header">
+                <h2>Mots de Passe Générés</h2>
+                <div>
+                    <button id="btn-copier-tableau" class="btn btn-secondary">
+                        📋 Copier le Tableau
+                    </button>
+                    <button id="btn-telecharger-csv" class="btn btn-secondary" style="margin-left: 10px;">
+                        💾 Télécharger CSV
+                    </button>
+                    <button id="btn-vider-tableau" class="btn btn-secondary" style="margin-left: 10px;">
+                        🗑️ Vider
+                    </button>
+                </div>
+            </div>
+
+            <div id="tableauContainer">
+                <div class="empty-state">
+                    <svg fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clip-rule="evenodd"></path>
+                    </svg>
+                    <h3>Aucun mot de passe généré</h3>
+                    <p>Collez votre tableau avec les identifiants et classes ci-dessus</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="copyNotification" class="copy-notification">
+        ✅ Copié dans le presse-papiers !
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle"></h3>
+                <button id="modalCloseBtn" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                <button class="btn btn-secondary" id="modalCancelBtn">Annuler</button>
+                <button class="btn btn-primary" id="modalConfirmBtn">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        class MotDePasse {
+            constructor(identifiant, classe, longueur = 12) {
+                this.identifiant = identifiant;
+                this.classe = classe;
+                this.motDePasse = this.genererMotDePasse(longueur);
+                this.estProvisoire = true;
+                this.id = crypto.randomUUID();
+            }
+
+            genererMotDePasse(longueur) {
+                let caracteres = '';
+                
+                if (document.getElementById('inclureMajuscules').checked) {
+                    caracteres += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                }
+                if (document.getElementById('inclureMinuscules').checked) {
+                    caracteres += 'abcdefghijklmnopqrstuvwxyz';
+                }
+                if (document.getElementById('inclureChiffres').checked) {
+                    caracteres += '0123456789';
+                }
+                if (document.getElementById('inclureSymboles').checked) {
+                    caracteres += '!@#$%^&*()_+-=[]{}|;:,.<>?';
+                }
+
+                if (caracteres === '') {
+                    caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                }
+
+                let motDePasse = '';
+                const randomValues = new Uint32Array(longueur);
+                window.crypto.getRandomValues(randomValues);
+                for (let i = 0; i < longueur; i++) {
+                    motDePasse += caracteres.charAt(randomValues[i] % caracteres.length);
+                }
+                return motDePasse;
+            }
+
+            personnaliser(nouveauMotDePasse) {
+                this.motDePasse = nouveauMotDePasse;
+                this.estProvisoire = false;
+            }
+        }
+
+        let motsDePasse = [];
+
+        // --- Gestion de la modale ---
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+        const modalCancelBtn = document.getElementById('modalCancelBtn');
+        const modalCloseBtn = document.getElementById('modalCloseBtn');
+        let modalResolve;
+
+        function hideModal() {
+            modal.classList.remove('show');
+        }
+
+        function showModal(config) {
+            modalTitle.textContent = config.title;
+            modalBody.innerHTML = config.body;
+            
+            modalConfirmBtn.textContent = config.confirmText || 'OK';
+            modalCancelBtn.textContent = config.cancelText || 'Annuler';
+            
+            modalConfirmBtn.style.display = config.showConfirm !== false ? 'inline-block' : 'none';
+            modalCancelBtn.style.display = config.showCancel ? 'inline-block' : 'none';
+            
+            modal.classList.add('show');
+
+            const input = modalBody.querySelector('input');
+            if (input) {
+                setTimeout(() => input.focus(), 100);
+            }
+
+            return new Promise(resolve => {
+                modalResolve = resolve;
+            });
+        }
+
+        modalConfirmBtn.addEventListener('click', () => {
+            const input = modalBody.querySelector('input');
+            hideModal();
+            if (modalResolve) {
+                modalResolve(input ? input.value : true);
+            }
+        });
+
+        modalCancelBtn.addEventListener('click', () => {
+            hideModal();
+            if (modalResolve) {
+                modalResolve(false);
+            }
+        });
+        
+        modalCloseBtn.addEventListener('click', () => {
+            hideModal();
+            if (modalResolve) {
+                modalResolve(null); // Treat close as cancel or no-op
+            }
+        });
+        
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('show')) {
+                hideModal();
+                if (modalResolve) {
+                    modalResolve(null);
+                }
+            }
+        });
+
+        function customAlert(title, message) {
+            return showModal({
+                title: title,
+                body: `<p>${message}</p>`,
+                showCancel: false,
+            });
+        }
+
+        function customConfirm(title, message) {
+            return showModal({
+                title: title,
+                body: `<p>${message}</p>`,
+                showCancel: true,
+                confirmText: 'Confirmer',
+            });
+        }
+
+        function customPrompt(title, message, defaultValue = '') {
+            return showModal({
+                title: title,
+                body: `
+                    <p>${message}</p>
+                    <input type="text" id="modalInput" value="${defaultValue}">
+                `,
+                showCancel: true,
+                confirmText: 'Valider',
+            });
+        }
+        // --- Fin de la gestion de la modale ---
+
+        async function traiterTableauColle() {
+            const texteColle = document.getElementById('pasteArea').value.trim();
+            
+            if (!texteColle) {
+                await customAlert('Zone de texte vide', 'Veuillez coller votre tableau dans la zone de texte.');
+                return;
+            }
+
+            const lignes = texteColle.split('\n').filter(ligne => ligne.trim());
+            let nouveauxMdp = [];
+            let erreurs = [];
+            const longueur = parseInt(document.getElementById('longueur').value);
+
+            lignes.forEach((ligne, index) => {
+                if (ligne.toLowerCase().includes('identifiant') || ligne.toLowerCase().includes('classe')) return;
+
+                let colonnes = ligne.split('\t').map(col => col.trim());
+                if (colonnes.length < 2) {
+                    const colonnesEspace = ligne.split(/\s{2,}/).map(col => col.trim());
+                    if (colonnesEspace.length >= 2) {
+                        colonnes = colonnesEspace;
+                    }
+                }
+
+                if (colonnes.length < 2) {
+                    erreurs.push(`Ligne ${index + 1}: Format incorrect (2 colonnes attendues).`);
+                    return;
+                }
+
+                const [identifiant, classe] = colonnes;
+
+                if (!identifiant || !classe) {
+                    erreurs.push(`Ligne ${index + 1}: Identifiant ou classe manquant.`);
+                    return;
+                }
+
+                if (motsDePasse.some(mdp => mdp.identifiant === identifiant) || 
+                    nouveauxMdp.some(mdp => mdp.identifiant === identifiant)) {
+                    erreurs.push(`Ligne ${index + 1}: L'identifiant "${identifiant}" existe déjà.`);
+                    return;
+                }
+
+                nouveauxMdp.push(new MotDePasse(identifiant, classe, longueur));
+            });
+
+            if (erreurs.length > 0) {
+                await customAlert('Erreurs détectées', 'Certaines lignes n\'ont pas pu être traitées :<br><br>' + erreurs.join('<br>'));
+                return;
+            }
+
+            if (nouveauxMdp.length === 0) {
+                await customAlert('Aucune donnée', 'Aucun nouvel utilisateur à ajouter n\'a été trouvé dans le texte collé.');
+                return;
+            }
+
+            motsDePasse.push(...nouveauxMdp);
+            document.getElementById('pasteArea').value = '';
+            
+            afficherTableau();
+            afficherNotification(`${nouveauxMdp.length} mots de passe générés !`);
+        }
+
+        function viderZoneCollage() {
+            document.getElementById('pasteArea').value = '';
+        }
+
+        async function ajouterMotDePasse() {
+            const identifiant = document.getElementById('identifiant').value.trim();
+            const classe = document.getElementById('classe').value;
+            const longueur = parseInt(document.getElementById('longueur').value);
+
+            if (!identifiant) {
+                await customAlert('Identifiant manquant', 'Veuillez saisir un identifiant.');
+                return;
+            }
+
+            if (motsDePasse.some(mdp => mdp.identifiant === identifiant)) {
+                await customAlert('Erreur', 'Cet identifiant existe déjà.');
+                return;
+            }
+
+            const nouveauMdp = new MotDePasse(identifiant, classe, longueur);
+            motsDePasse.push(nouveauMdp);
+
+            document.getElementById('identifiant').value = '';
+            
+            afficherTableau();
+        }
+
+        function afficherTableau() {
+            const container = document.getElementById('tableauContainer');
+            
+            if (motsDePasse.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clip-rule="evenodd"></path>
+                        </svg>
+                        <h3>Aucun mot de passe généré</h3>
+                        <p>Ajoutez votre premier utilisateur pour commencer</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Identifiant</th>
+                            <th>Classe</th>
+                            <th>Mot de Passe</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            motsDePasse.forEach(mdp => {
+                const statutClass = mdp.estProvisoire ? 'status-provisoire' : 'status-personnalise';
+                const statutText = mdp.estProvisoire ? 'Provisoire' : 'Personnalisé';
+                
+                tableHTML += `
+                    <tr>
+                        <td><strong>${mdp.identifiant}</strong></td>
+                        <td>${mdp.classe}</td>
+                        <td class="password-cell">${mdp.motDePasse}</td>
+                        <td><span class="status-badge ${statutClass}">${statutText}</span></td>
+                        <td class="actions">
+                            <button class="btn btn-success btn-small" data-action="copier" data-password="${mdp.motDePasse}">
+                                📋 Copier
+                            </button>
+                            <button class="btn btn-secondary btn-small" data-action="modifier" data-id="${mdp.id}">
+                                ✏️ Modifier
+                            </button>
+                            <button class="btn btn-secondary btn-small" data-action="supprimer" data-id="${mdp.id}">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHTML;
+        }
+
+        function copierMotDePasse(motDePasse) {
+            navigator.clipboard.writeText(motDePasse).then(() => {
+                afficherNotification();
+            });
+        }
+
+        async function copierTableau() {
+            if (motsDePasse.length === 0) {
+                await customAlert('Tableau vide', 'Il n\'y a aucun mot de passe à copier.');
+                return;
+            }
+
+            let texte = "Identifiant (nom.prénom)\tClasse\tMot de passe provisoire\n";
+            
+            motsDePasse.forEach(mdp => {
+                texte += `${mdp.identifiant}\t${mdp.classe}\t${mdp.motDePasse}\n`;
+            });
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(texte).then(() => {
+                    afficherNotification(`Tableau copié ! ${motsDePasse.length} lignes`);
+                }).catch(err => {
+                    copierAvecFallback(texte);
+                });
+            } else {
+                copierAvecFallback(texte);
+            }
+        }
+
+        function copierAvecFallback(texte) {
+            const textArea = document.createElement('textarea');
+            textArea.value = texte;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                afficherNotification(`Tableau copié ! ${motsDePasse.length} lignes`);
+            } catch (err) {
+                const popup = window.open('', '_blank', 'width=800,height=600');
+                popup.document.write(`
+                    <html>
+                        <head><title>Tableau des mots de passe</title></head>
+                        <body>
+                            <h3>Sélectionnez tout le texte ci-dessous et copiez-le (Ctrl+A puis Ctrl+C)</h3>
+                            <textarea style="width:100%;height:80%;font-family:monospace;">${texte}</textarea>
+                        </body>
+                    </html>
+                `);
+                afficherNotification('Tableau ouvert dans une nouvelle fenêtre');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        async function personnaliserMotDePasse(id) {
+            const mdp = motsDePasse.find(m => m.id === id);
+            if (!mdp) return;
+
+            const nouveauMotDePasse = await customPrompt('Modifier le mot de passe', `Entrez le nouveau mot de passe pour <strong>${mdp.identifiant}</strong>:`, mdp.motDePasse);
+            
+            if (nouveauMotDePasse && nouveauMotDePasse.trim()) {
+                mdp.personnaliser(nouveauMotDePasse.trim());
+                afficherTableau();
+            }
+        }
+
+        async function supprimerMotDePasse(id) {
+            const confirmed = await customConfirm('Confirmation', 'Êtes-vous sûr de vouloir supprimer ce mot de passe ?');
+            if (confirmed) {
+                motsDePasse = motsDePasse.filter(m => m.id !== id);
+                afficherTableau();
+            }
+        }
+
+        async function viderTableau() {
+            if (motsDePasse.length === 0) return;
+            
+            const confirmed = await customConfirm('Vider le tableau', 'Êtes-vous sûr de vouloir supprimer tous les mots de passe générés ?');
+            if (confirmed) {
+                motsDePasse = [];
+                afficherTableau();
+            }
+        }
+
+        async function telechargerCSV() {
+            if (motsDePasse.length === 0) {
+                await customAlert('Tableau vide', 'Il n\'y a aucun mot de passe à télécharger.');
+                return;
+            }
+
+            const headers = ['Identifiant', 'Classe', 'Mot de passe'];
+            const toCsvRow = (arr) => arr.map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
+            let csvContent = toCsvRow(headers) + '\n';
+            
+            motsDePasse.forEach(mdp => {
+                csvContent += toCsvRow([mdp.identifiant, mdp.classe, mdp.motDePasse]) + '\n';
+            });
+
+            const nomFichier = `mots_de_passe_${new Date().toISOString().split('T')[0]}.csv`;
+
+            try {
+                const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = nomFichier;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+                
+                const message = `Fichier "${nomFichier}" téléchargé ! Vérifiez votre dossier de téléchargements.`;
+                afficherNotification(message);
+                
+            } catch (error) {
+                console.error('Erreur de téléchargement:', error);
+                const popup = window.open('', '_blank', 'width=900,height=700');
+                popup.document.write(`
+                    <html>
+                        <head>
+                            <title>Copie manuelle - ${nomFichier}</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; padding: 20px; }
+                                h2 { color: #333; }
+                                .instructions { background: #f0f8ff; padding: 15px; border-radius: 5px; margin: 10px 0; }
+                                textarea { width: 100%; height: 400px; font-family: monospace; font-size: 12px; border: 1px solid #ccc; }
+                            </style>
+                        </head>
+                        <body>
+                            <h2>📋 Tableau des mots de passe (CSV)</h2>
+                            <div class="instructions">
+                                <strong>Le téléchargement automatique a échoué.</strong><br>
+                                1. Sélectionnez tout le texte ci-dessous (Ctrl+A)<br>
+                                2. Copiez-le (Ctrl+C)<br>
+                                3. Collez-le dans un éditeur de texte (ex: Notepad, VSCode)<br>
+                                4. Sauvegardez le fichier avec l'extension <strong>.csv</strong>
+                            </div>
+                            <textarea readonly>${csvContent}</textarea>
+                            <p><strong>Nombre total:</strong> ${motsDePasse.length} utilisateurs</p>
+                        </body>
+                    </html>
+                `);
+                afficherNotification('Tableau ouvert dans une nouvelle fenêtre pour copie manuelle.');
+            }
+        }
+
+        function afficherNotification(message = 'Copié dans le presse-papiers !') {
+            const notification = document.getElementById('copyNotification');
+            notification.textContent = `✅ ${message}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        }
+        
+        function init() {
+            // Initialiser l'affichage
+            afficherTableau();
+            
+            // Attacher les écouteurs d'événements
+            document.getElementById('btn-generer').addEventListener('click', traiterTableauColle);
+            document.getElementById('btn-vider-paste').addEventListener('click', viderZoneCollage);
+            document.getElementById('btn-ajouter-manuel').addEventListener('click', ajouterMotDePasse);
+            document.getElementById('btn-copier-tableau').addEventListener('click', copierTableau);
+            document.getElementById('btn-telecharger-csv').addEventListener('click', telechargerCSV);
+            document.getElementById('btn-vider-tableau').addEventListener('click', viderTableau);
+
+            document.getElementById('identifiant').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    ajouterMotDePasse();
+                }
+            });
+            
+            // Gestion des actions dans le tableau via délégation
+            document.getElementById('tableauContainer').addEventListener('click', (e) => {
+                const target = e.target.closest('button[data-action]');
+                if (!target) return;
+                
+                const { action, id, password } = target.dataset;
+                
+                if (action === 'copier') {
+                    copierMotDePasse(password);
+                } else if (action === 'modifier') {
+                    personnaliserMotDePasse(id);
+                } else if (action === 'supprimer') {
+                    supprimerMotDePasse(id);
+                }
+            });
+        }
+        
+        // Lancer l'application une fois le DOM chargé
+        document.addEventListener('DOMContentLoaded', init);
+    })();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9809fad95378bb2d',t:'MTc1ODEyNjUzOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
