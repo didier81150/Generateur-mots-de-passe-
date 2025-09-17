@@ -671,7 +671,8 @@ identifiant2	classe2
 
                 let colonnes = ligne.split('\t').map(col => col.trim());
                 if (colonnes.length < 2) {
-                    const colonnesEspace = ligne.split(/\s{2,}/).map(col => col.trim());
+                    // Fallback to splitting by any amount of whitespace
+                    const colonnesEspace = ligne.split(/\s+/).map(col => col.trim());
                     if (colonnesEspace.length >= 2) {
                         colonnes = colonnesEspace;
                     }
